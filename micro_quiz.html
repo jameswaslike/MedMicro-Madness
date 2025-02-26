@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microbiology Quiz</title>
+    <style>
+        .correct {
+            background-color: green;
+            color: white;
+        }
+        .incorrect {
+            background-color: red;
+            color: white;
+        }
+        #levelUpMessage {
+            font-size: 24px;
+            font-weight: bold;
+            color: blue;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Microbiology Quiz</h1>
+    <p id="status">Level: 1 | Score: 0 | Time Left: 60s</p>
+    <div id="question"></div>
+    <div id="options"></div>
+    <div id="explanation" style="display: none;"></div>
+    <button id="pauseButton">Pause</button>
+    <div id="levelUpMessage">Level Up!</div> <!-- Added Level Up Message -->
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const questions = [
+                { question: "What is the correct procedure for obtaining a sputum sample for microbiological examination?", options: ["Coughing up a deep cough", "Gargling with saltwater", "Swabbing the throat", "Breathing in nebulized antibiotics"], answer: "Coughing up a deep cough", explanation: "Sputum samples are best obtained by coughing up a deep, productive cough to ensure that the sample is from the lower respiratory tract." },
+                { question: "What is the primary reason for labeling a specimen correctly?", options: ["To ensure proper billing", "To avoid specimen rejection", "To ensure accurate patient identification", "To comply with safety standards"], answer: "To ensure accurate patient identification", explanation: "Correct specimen labeling is crucial to ensure the specimen is linked to the correct patient." },
+                { question: "What is the recommended time frame for transporting a blood culture specimen to the lab?", options: ["Within 30 minutes", "Within 1 hour", "Within 4 hours", "Within 24 hours"], answer: "Within 1 hour", explanation: "Blood cultures should be transported to the lab as quickly as possible, ideally within 1 hour, to ensure the best recovery of pathogens." },
+                { question: "Which of the following is a method of specimen collection for mycobacteria?", options: ["Blood culture", "Nasal swab", "Sputum collection", "Stool sample"], answer: "Sputum collection", explanation: "Sputum is the primary specimen collected to detect mycobacteria, especially in suspected tuberculosis cases." },
+                { question: "Which specimen rejection criteria is most likely to occur with a stool sample?", options: ["Contamination with urine", "Incorrect temperature during transport", "Inadequate labeling", "Delayed transport time"], answer: "Incorrect temperature during transport", explanation: "Stool samples are highly susceptible to temperature-related issues, which can lead to rejection." },
+                { question: "Which of the following methods is used to concentrate bacterial specimens?", options: ["Differential staining", "Filtration", "Centrifugation", "Incubation"], answer: "Centrifugation", explanation: "Centrifugation is a common method used to concentrate bacterial specimens, especially when working with low bacterial counts." },
+                { question: "Which type of media is used for the recovery of Mycobacterium tuberculosis?", options: ["Blood agar", "Lowenstein-Jensen media", "MacConkey agar", "Chocolate agar"], answer: "Lowenstein-Jensen media", explanation: "Lowenstein-Jensen media is a specialized agar used for growing Mycobacterium tuberculosis." },
+                { question: "What is the purpose of the Gram stain in microbiology?", options: ["To identify the presence of viral infections", "To determine bacterial antibiotic susceptibility", "To differentiate between bacterial species", "To visualize the presence of fungal cells"], answer: "To differentiate between bacterial species", explanation: "The Gram stain is used to classify bacteria into two groups (Gram-positive and Gram-negative) based on their cell wall structure." },
+                { question: "Which of the following is the correct temperature for incubating most bacterial cultures?", options: ["20°C", "37°C", "55°C", "100°C"], answer: "37°C", explanation: "Most bacterial cultures are incubated at 37°C, which is the normal body temperature." },
+                { question: "What is the role of an automated plating instrument?", options: ["To prepare bacterial smears", "To grow bacteria in liquid cultures", "To transfer bacterial samples to agar plates", "To decontaminate bacterial specimens"], answer: "To transfer bacterial samples to agar plates", explanation: "Automated plating instruments are used to quickly and accurately transfer bacterial samples onto agar plates for culturing." },
+                { question: "When preparing slides for staining, which of the following is most important?", options: ["Using a sterile cover slip", "Using a non-porous slide surface", "Ensuring the slide is air-dried after fixation", "Using formalin as a fixative"], answer: "Ensuring the slide is air-dried after fixation", explanation: "Air-drying slides after fixation helps prevent distortion of microbial samples during staining." },
+                { question: "What is the purpose of a biosafety cabinet in microbiological testing?", options: ["To sterilize equipment", "To protect the specimen from contamination", "To protect the laboratory worker from exposure to hazardous microorganisms", "To incubate cultures"], answer: "To protect the laboratory worker from exposure to hazardous microorganisms", explanation: "Biosafety cabinets are used to provide a controlled environment that protects laboratory workers from exposure to harmful pathogens." },
+                { question: "What is the typical incubation temperature for fungi?", options: ["20°C", "30°C", "37°C", "50°C"], answer: "30°C", explanation: "Fungi typically grow well at an incubation temperature of 30°C." },
+                { question: "Which of the following is the primary purpose of selective media?", options: ["To enhance the growth of all microorganisms", "To inhibit the growth of non-target microorganisms", "To promote bacterial spore formation", "To separate fungi from bacteria"], answer: "To inhibit the growth of non-target microorganisms", explanation: "Selective media is designed to inhibit the growth of unwanted organisms while promoting the growth of target species." },
+                { question: "What is the correct procedure when handling a specimen for DNA extraction?", options: ["Expose the specimen to heat for 30 minutes", "Freeze the specimen immediately upon receipt", "Process the specimen under sterile conditions", "Store the specimen at room temperature"], answer: "Process the specimen under sterile conditions", explanation: "DNA extraction should be done under sterile conditions to avoid contamination and ensure the purity of the extracted DNA." },
+                { question: "What is a key difference between enriched and differential media?", options: ["Enriched media supports the growth of fastidious organisms, while differential media distinguishes between organisms based on their metabolic properties.", "Enriched media inhibits bacterial growth, while differential media supports it.", "Enriched media is used only for fungi, while differential media is used for bacteria.", "Enriched media contains antibiotics, while differential media does not."], answer: "Enriched media supports the growth of fastidious organisms, while differential media distinguishes between organisms based on their metabolic properties.", explanation: "Enriched media provides nutrients to promote the growth of fastidious organisms, while differential media uses indicators to distinguish between species based on their metabolic reactions." }
+            ];
+
+            let score = 0;
+            let currentLevel = 1;
+            let timeLeft = 60; // Starting at 1 minute
+            let interval;
+            let isPaused = false;
+
+            function startTimer() {
+                interval = setInterval(function () {
+                    if (!isPaused) {
+                        timeLeft--;
+                        document.getElementById("status").innerText = `Level: ${currentLevel} | Score: ${score} | Time Left: ${timeLeft}s`;
+                        if (timeLeft <= 0) {
+                            clearInterval(interval);
+                            alert("Times up sucka! Back to the beginning you go.");
+                            score = 0;
+                            currentLevel = 1;
+                            nextQuestion();
+                        }
+                    }
+                }, 1000); // Countdown in seconds
+            }
+
+            function nextQuestion() {
+                if (questions.length === 0) {
+                    alert(`Quiz finished! Final score: ${score}`);
+                    return;
+                }
+
+                const randomIndex = Math.floor(Math.random() * questions.length);
+                const question = questions.splice(randomIndex, 1)[0];
+
+                document.getElementById("question").innerText = question.question;
+                const optionsContainer = document.getElementById("options");
+                optionsContainer.innerHTML = '';
+                question.options.forEach(option => {
+                    const button = document.createElement("button");
+                    button.textContent = option;
+                    button.onclick = () => checkAnswer(button, question.answer, question.explanation);
+                    optionsContainer.appendChild(button);
+                });
+
+                document.getElementById("explanation").style.display = 'none';
+                timeLeft = 60; // Reset time
+                startTimer();
+            }
+
+            function checkAnswer(button, correctAnswer, explanation) {
+                const isCorrect = button.textContent === correctAnswer;
+                button.classList.add(isCorrect ? "correct" : "incorrect");
+                document.getElementById("explanation").style.display = 'block';
+                document.getElementById("explanation").innerText = explanation;
+                if (isCorrect) {
+                    score += currentLevel * 10; // Score increases by 10 per correct answer at level 1, 15 at level 2, etc.
+                } else {
+                    alert("Incorrect answer! Back to the beginning you go.");
+                    score = 0;
+                    currentLevel = 1;
+                    nextQuestion();
+                    return;
+                }
+                if (score >= currentLevel * 5 * 10) {
+                    currentLevel++; // Increase level after reaching score milestone
+                    document.getElementById("levelUpMessage").style.display = 'block'; // Show Level Up Message
+                    setTimeout(function () {
+                        document.getElementById("levelUpMessage").style.display = 'none'; // Hide Level Up Message after 2 seconds
+                    }, 2000);
+                }
+                setTimeout(nextQuestion, 1000);
+            }
+
+            document.getElementById("pauseButton").addEventListener("click", function () {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    // Hide question and options
+                    document.getElementById("question").style.display = 'none';
+                    document.getElementById("options").style.display = 'none';
+                    document.getElementById("pauseButton").innerText = "Resume";
+                } else {
+                    // Show question and options again
+                    document.getElementById("question").style.display = 'block';
+                    document.getElementById("options").style.display = 'block';
+                    document.getElementById("pauseButton").innerText = "Pause";
+                }
+            });
+
+            nextQuestion();  // Display the first question when the page loads
+        });
+    </script>
+</body>
+</html>
